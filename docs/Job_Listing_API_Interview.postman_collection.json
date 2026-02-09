@@ -1,0 +1,464 @@
+{
+	"info": {
+		"name": "Job Listing API - Interview Collection",
+		"description": "Frontend Developer Interview API - Complete collection with authentication and job endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "interview-token-2024",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Save token to environment variable",
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"auth_token\", jsonData.token);",
+									"    pm.test(\"Login successful\", function () {",
+									"        pm.response.to.have.status(200);",
+									"        pm.expect(jsonData.token).to.exist;",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"candidate@test.com\",\n  \"password\": \"interview2024\"\n}"
+						},
+						"url": {
+							"raw": "https://interview.techliana.com/auth/login",
+							"protocol": "https",
+							"host": [
+								"interview",
+								"techliana",
+								"com"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Authenticate with the API and receive a Bearer token. Use this token in the Authorization header for all subsequent requests.\n\n**Static Credentials:**\n- Email: candidate@test.com\n- Password: interview2024\n\n**Response:**\n```json\n{\n  \"token\": \"Bearer interview-token-2024\",\n  \"message\": \"Login successful\"\n}\n```"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"candidate@test.com\",\n  \"password\": \"interview2024\"\n}"
+								},
+								"url": {
+									"raw": "https://interview.techliana.com/auth/login",
+									"protocol": "https",
+									"host": [
+										"interview",
+										"techliana",
+										"com"
+									],
+									"path": [
+										"auth",
+										"login"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n  \"token\": \"Bearer interview-token-2024\",\n  \"message\": \"Login successful\"\n}"
+						},
+						{
+							"name": "Invalid Credentials",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"wrong@email.com\",\n  \"password\": \"wrongpassword\"\n}"
+								},
+								"url": {
+									"raw": "https://interview.techliana.com/auth/login",
+									"protocol": "https",
+									"host": [
+										"interview",
+										"techliana",
+										"com"
+									],
+									"path": [
+										"auth",
+										"login"
+									]
+								}
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n  \"error\": \"Invalid credentials\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Jobs",
+			"item": [
+				{
+					"name": "List Jobs - Page 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has jobs array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.jobs).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Response has pagination\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.pagination).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://interview.techliana.com/jobs?page=1&limit=10",
+							"protocol": "https",
+							"host": [
+								"interview",
+								"techliana",
+								"com"
+							],
+							"path": [
+								"jobs"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number (default: 1)"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Items per page (default: 10)"
+								}
+							]
+						},
+						"description": "Get a paginated list of jobs. Returns 10 jobs per page by default.\n\n**Query Parameters:**\n- `page` (optional): Page number, default is 1\n- `limit` (optional): Items per page, default is 10\n- `search` (optional): Search by job title or company name\n\n**Authentication Required:** Yes (Bearer token)\n\n**Response:**\n```json\n{\n  \"jobs\": [...],\n  \"pagination\": {\n    \"currentPage\": 1,\n    \"totalPages\": 3,\n    \"totalJobs\": 30,\n    \"limit\": 10,\n    \"hasNextPage\": true,\n    \"hasPrevPage\": false\n  }\n}\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "List Jobs - Page 2",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://interview.techliana.com/jobs?page=2&limit=10",
+							"protocol": "https",
+							"host": [
+								"interview",
+								"techliana",
+								"com"
+							],
+							"path": [
+								"jobs"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "2"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Get page 2 of the job listings."
+					},
+					"response": []
+				},
+				{
+					"name": "Search Jobs - React",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://interview.techliana.com/jobs?search=react",
+							"protocol": "https",
+							"host": [
+								"interview",
+								"techliana",
+								"com"
+							],
+							"path": [
+								"jobs"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "react",
+									"description": "Search term for job title or company"
+								}
+							]
+						},
+						"description": "Search for jobs containing 'react' in the title or company name. Search is case-insensitive and matches partial strings."
+					},
+					"response": []
+				},
+				{
+					"name": "Search Jobs - Developer",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://interview.techliana.com/jobs?search=developer&page=1&limit=10",
+							"protocol": "https",
+							"host": [
+								"interview",
+								"techliana",
+								"com"
+							],
+							"path": [
+								"jobs"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "developer"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Search for developer jobs with pagination."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Job Details - ID 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has job details\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.id).to.exist;",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.company).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://interview.techliana.com/jobs/1",
+							"protocol": "https",
+							"host": [
+								"interview",
+								"techliana",
+								"com"
+							],
+							"path": [
+								"jobs",
+								"1"
+							]
+						},
+						"description": "Get detailed information about a specific job by ID.\n\n**Authentication Required:** Yes (Bearer token)\n\n**Response:**\n```json\n{\n  \"id\": 1,\n  \"title\": \"Senior Frontend Developer\",\n  \"company\": \"TechCorp Solutions\",\n  \"location\": \"Nairobi, Kenya\",\n  \"salary\": \"KES 200,000 - 300,000\",\n  \"jobType\": \"Full-time\",\n  \"description\": \"...\",\n  \"requirements\": [...],\n  \"postedDate\": \"2024-02-01\"\n}\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Job Details - ID 5",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://interview.techliana.com/jobs/5",
+							"protocol": "https",
+							"host": [
+								"interview",
+								"techliana",
+								"com"
+							],
+							"path": [
+								"jobs",
+								"5"
+							]
+						},
+						"description": "Get details for job with ID 5."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Job Details - Invalid ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://interview.techliana.com/jobs/999",
+							"protocol": "https",
+							"host": [
+								"interview",
+								"techliana",
+								"com"
+							],
+							"path": [
+								"jobs",
+								"999"
+							]
+						},
+						"description": "Test error handling for non-existent job ID."
+					},
+					"response": []
+				}
+			],
+			"description": "All job-related endpoints including listing, searching, and viewing details."
+		},
+		{
+			"name": "Error Handling",
+			"item": [
+				{
+					"name": "Unauthorized Request",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://interview.techliana.com/jobs",
+							"protocol": "https",
+							"host": [
+								"interview",
+								"techliana",
+								"com"
+							],
+							"path": [
+								"jobs"
+							]
+						},
+						"description": "Test request without authentication token. Should return 401 Unauthorized."
+					},
+					"response": []
+				},
+				{
+					"name": "Invalid Token",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "invalid-token",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://interview.techliana.com/jobs",
+							"protocol": "https",
+							"host": [
+								"interview",
+								"techliana",
+								"com"
+							],
+							"path": [
+								"jobs"
+							]
+						},
+						"description": "Test request with invalid authentication token. Should return 403 Forbidden."
+					},
+					"response": []
+				}
+			],
+			"description": "Test cases for error handling and edge cases."
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "https://interview.techliana.com",
+			"type": "string"
+		}
+	]
+}
