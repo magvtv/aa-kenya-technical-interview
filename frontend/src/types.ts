@@ -16,10 +16,12 @@ export interface Job {
 }
 
 export interface Pagination {
-  page: number
-  limit: number
-  totalJobs: number
+  currentPage: number
   totalPages: number
+  totalJobs: number
+  limit: number
+  hasNextPage: boolean
+  hasPrevPage: boolean
 }
 
 export interface JobsResponse {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
+import { useToast } from 'vue-toastification'
 import api from '../api'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
@@ -10,10 +11,14 @@ const jobs = ref<Job[]>([])
 const search = ref('')
 const page = ref(1)
 const limit = ref(10)
+const currentPage = ref(1)
 const totalPages = ref(1)
 const totalJobs = ref(0)
+const hasNextPage = ref(false)
+const hasPrevPage = ref(false)
 const loading = ref(false)
 const router = useRouter()
+const toast = useToast()
 
 const fetchJobs = async () => {
   loading.value = true
@@ -22,12 +27,18 @@ const fetchJobs = async () => {
       params: { search: search.value, page: page.value, limit: limit.value }
     })
     jobs.value = response.data.jobs
+    currentPage.value = response.data.pagination.currentPage
     totalPages.value = response.data.pagination.totalPages
     totalJobs.value = response.data.pagination.totalJobs
+    hasNextPage.value = response.data.pagination.hasNextPage
+    hasPrevPage.value = response.data.pagination.hasPrevPage
   } catch (err) {
     console.error(err)
     if (axios.isAxiosError(err) && err.response?.status === 403) {
+      toast.error('Session expired. Please login again.')
       router.push('/login')
+    } else {
+      toast.error('Failed to fetch jobs. Please try again.')
     }
   } finally {
     loading.value = false
@@ -98,6 +109,20 @@ const goToJob = (id: number) => {
       </div>
 
       <div v-else class="space-y-4">
+        <!-- No jobs found message -->
+        <div v-if="jobs.length === 0" class="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-100">
+          <i class="pi pi-search text-gray-300 text-5xl mb-4"></i>
+          <h3 class="text-xl font-semibold text-gray-700 mb-2">
+            <span v-if="search">No "{{ search }}" jobs found</span>
+            <span v-else>No jobs found</span>
+          </h3>
+          <p class="text-gray-500">
+            <span v-if="search">Try adjusting your search terms or browse all available positions.</span>
+            <span v-else>There are currently no job listings available.</span>
+          </p>
+        </div>
+
+        <!-- Job listings -->
         <div v-for="job in jobs" :key="job.id" @click="goToJob(job.id)" class="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-100">
           <h2 class="text-xl font-semibold text-indigo-600">{{ job.title }}</h2>
           <p class="text-gray-600 font-medium">{{ job.company }}</p>
@@ -119,12 +144,12 @@ const goToJob = (id: number) => {
       </div>
 
       <div class="mt-8 flex justify-center gap-4 items-center flex-wrap">
-        <button :disabled="page <= 1" @click="page--" class="px-4 py-2 bg-white border border-gray-300 rounded-md disabled:opacity-50 hover:bg-gray-50 transition-colors flex items-center gap-2">
+        <button :disabled="!hasPrevPage" @click="page--" class="px-4 py-2 bg-white border border-gray-300 rounded-md disabled:opacity-50 hover:bg-gray-50 transition-colors flex items-center gap-2">
           <i class="pi pi-chevron-left"></i>
           Previous
         </button>
-        <span class="px-4 py-2 text-gray-700">Page {{ page }} of {{ totalPages }}</span>
-        <button :disabled="page >= totalPages" @click="page++" class="px-4 py-2 bg-white border border-gray-300 rounded-md disabled:opacity-50 hover:bg-gray-50 transition-colors flex items-center gap-2">
+        <span class="px-4 py-2 text-gray-700">Page {{ currentPage }} of {{ totalPages }}</span>
+        <button :disabled="!hasNextPage" @click="page++" class="px-4 py-2 bg-white border border-gray-300 rounded-md disabled:opacity-50 hover:bg-gray-50 transition-colors flex items-center gap-2">
           Next
           <i class="pi pi-chevron-right"></i>
         </button>
