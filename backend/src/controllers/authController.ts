@@ -1,19 +1,20 @@
 import { Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
+import { externalApiService } from '../services/externalApi';
+import axios from 'axios';
 
-const SECRET_KEY = process.env.JWT_SECRET || 'interview-token-2024';
-
-export const login = (req: Request, res: Response) => {
-  const { email, password } = req.body;
-
-  // Simple hardcoded check as requested
-  if (email === 'candidate@test.com' && password === 'interview2024') {
-    // const token = jwt.sign({ email }, SECRET_KEY, { expiresIn: '1h' });
-    res.json({
-      token: "Bearer interview-token-2024",
-      message: "Login successful"
-    });
-  } else {
-    res.status(401).json({ message: 'Invalid credentials! Check if your email or password is correct.' });
+export const login = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+    
+    // Forward login request to external API
+    const data = await externalApiService.login(email, password);
+    res.json(data);
+  } catch (error) {
+    // Forward error response from external API
+    if (axios.isAxiosError(error) && error.response) {
+      res.status(error.response.status).json(error.response.data);
+    } else {
+      res.status(500).json({ message: 'Internal server error' });
+    }
   }
 };

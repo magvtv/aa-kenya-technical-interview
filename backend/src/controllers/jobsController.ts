@@ -1,44 +1,45 @@
 import { Request, Response } from 'express';
-import { jobs } from '../data/jobs';
+import { externalApiService } from '../services/externalApi';
+import axios from 'axios';
 
-export const getJobs = (req: Request, res: Response) => {
-  const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || 10;
-  const search = String(req.query.search || '').toLowerCase();
+export const getJobs = async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const search = req.query.search as string || '';
 
-  let filteredJobs = jobs;
+    // Get token from request headers
+    const token = req.headers.authorization as string;
 
-  if (search) {
-    filteredJobs = jobs.filter(job => 
-      job.title.toLowerCase().includes(search) || 
-      job.company.toLowerCase().includes(search)
-    );
-  }
-
-  const startIndex = (page - 1) * limit;
-  const endIndex = page * limit;
-  const paginatedJobs = filteredJobs.slice(startIndex, endIndex);
-
-  res.json({
-    jobs: paginatedJobs,
-    pagination: {
-      currentPage: page,
-      totalPages: Math.ceil(filteredJobs.length / limit),
-      totalJobs: filteredJobs.length,
-      limit,
-      hasNextPage: endIndex < filteredJobs.length,
-      hasPrevPage: page > 1
+    // Forward request to external API
+    const data = await externalApiService.getJobs(token, { page, limit, search });
+    res.json(data);
+  } catch (error) {
+    // Forward error response from external API
+    if (axios.isAxiosError(error) && error.response) {
+      res.status(error.response.status).json(error.response.data);
+    } else {
+      res.status(500).json({ message: 'Internal server error' });
     }
-  });
+  }
 };
 
-export const getJobById = (req: Request, res: Response) => {
-  const id = parseInt(req.params.id as string);
-  const job = jobs.find(j => j.id === id);
+export const getJobById = async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id as string);
 
-  if (job) {
-    res.json(job);
-  } else {
-    res.status(404).json({ message: 'Job not found' });
+    // Get token from request headers
+    const token = req.headers.authorization as string;
+
+    // Forward request to external API
+    const data = await externalApiService.getJobById(token, id);
+    res.json(data);
+  } catch (error) {
+    // Forward error response from external API
+    if (axios.isAxiosError(error) && error.response) {
+      res.status(error.response.status).json(error.response.data);
+    } else {
+      res.status(500).json({ message: 'Internal server error' });
+    }
   }
 };

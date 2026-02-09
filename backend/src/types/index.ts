@@ -10,6 +10,20 @@ export interface Job {
   requirements: string[]; // Added
 }
 
+export interface Pagination {
+  currentPage: number;
+  totalPages: number;
+  totalJobs: number;
+  limit: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
+export interface JobsResponse {
+  jobs: Job[];
+  pagination: Pagination;
+}
+
 export interface User {
   id: number;
   email: string;
