@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useToast } from 'vue-toastification'
 import api from '../api'
 import { useAuthStore } from '../stores/auth'
 
@@ -8,8 +9,8 @@ const email = ref('candidate@test.com')
 const password = ref('interview2024')
 const router = useRouter()
 const authStore = useAuthStore()
-const error = ref('')
 const showPassword = ref(false)
+const toast = useToast()
 
 const handleLogin = async () => {
   try {
@@ -19,9 +20,10 @@ const handleLogin = async () => {
     })
     // Extract exact token from response (e.g. "Bearer interview-token-2024")
     authStore.setToken(response.data.token)
+    toast.success('Login successful! Redirecting...')
     router.push('/jobs')
   } catch (err) {
-    error.value = 'Invalid login credentials'
+    toast.error('Invalid login credentials. Please check your email and password.')
   }
 }
 </script>
@@ -51,8 +53,6 @@ const handleLogin = async () => {
             </div>
           </div>
         </div>
-
-        <div v-if="error" class="text-red-500 text-sm text-center bg-red-50 p-3 rounded-md border border-red-100">{{ error }}</div>
 
         <div>
           <button type="submit" class="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 shadow-sm">

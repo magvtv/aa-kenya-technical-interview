@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useToast } from 'vue-toastification'
 import api from '../api'
 import DefaultLayout from './DefaultLayout.vue'
 import type { Job } from '../types'
@@ -9,6 +10,7 @@ const route = useRoute()
 const router = useRouter()
 const job = ref<Job | null>(null)
 const loading = ref(true)
+const toast = useToast()
 
 onMounted(async () => {
   try {
@@ -16,6 +18,7 @@ onMounted(async () => {
     job.value = response.data
   } catch (err) {
     console.error(err)
+    toast.error('Failed to load job details. Please try again.')
   } finally {
     loading.value = false
   }
