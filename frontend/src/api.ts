@@ -3,7 +3,7 @@ import { useAuthStore } from './stores/auth'
 import router from './router'
 
 const api = axios.create({
-  baseURL: 'https://interview.techliana.com',
+  baseURL: 'http://localhost:3000',
   headers: {
     'Content-Type': 'application/json'
   }

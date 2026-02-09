@@ -1,3 +1,8 @@
+/**
+ * Frontend types
+ * Note: These types should match the backend types in backend/src/types/index.ts
+ * Consider creating a shared types package for larger projects
+ */
 export interface Job {
   id: number
   title: string

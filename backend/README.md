@@ -35,7 +35,7 @@ My architecture prioritizes **separation of concerns**, **type safety**, and **e
 │  └──────────────────┬───────────────────────────┘  │
 │  ┌──────────────────▼───────────────────────────┐  │
 │  │         Data Layer                           │  │
-│  │  • In-Memory Store  • Future: Database       │  │
+│  │  • Mock Data (mocks/)  • Future: Database   │  │
 │  └──────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────┘
 ```
