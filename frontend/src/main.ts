@@ -6,10 +6,13 @@ import 'primeicons/primeicons.css'
 import Toast from 'vue-toastification'
 import 'vue-toastification/dist/index.css'
 import App from './App.vue'
+import api from './api'
+import { useAuthStore } from './stores/auth'
 
 const app = createApp(App)
+const pinia = createPinia()
 
-app.use(createPinia())
+app.use(pinia)
 app.use(router)
 app.use(Toast, {
   position: 'top-right',
@@ -28,5 +31,16 @@ app.use(Toast, {
   maxToasts: 5,
   newestOnTop: true
 })
+
+// Validate existing token on app startup so production doesn't treat stale tokens as authenticated
+const authStore = useAuthStore(pinia)
+
+if (authStore.token) {
+  api
+    .get('/jobs')
+    .catch(() => {
+      authStore.clearToken()
+    })
+}
 
 app.mount('#app')
