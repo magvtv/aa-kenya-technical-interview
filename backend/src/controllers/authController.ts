@@ -14,6 +14,6 @@ export const login = (req: Request, res: Response) => {
       message: "Login successful"
     });
   } else {
-    res.status(401).json({ message: 'Invalid credentials' });
+    res.status(401).json({ message: 'Invalid credentials! Check if your email or password is correct.' });
   }
 };
