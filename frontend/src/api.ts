@@ -1,29 +1,32 @@
-import axios from 'axios'
-import { useAuthStore } from './stores/auth'
-import router from './router'
+import axios from "axios";
+import { useAuthStore } from "./stores/auth";
+import router from "./router";
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: "/api",
   headers: {
-    'Content-Type': 'application/json'
-  }
-})
+    "Content-Type": "application/json",
+  },
+});
 
-api.interceptors.request.use(config => {
-  const authStore = useAuthStore()
+api.interceptors.request.use((config) => {
+  const authStore = useAuthStore();
   if (authStore.token) {
-    config.headers.Authorization = authStore.token
+    config.headers.Authorization = authStore.token;
   }
-  return config
-})
+  return config;
+});
 
-api.interceptors.response.use(response => response, error => {
-  if (error.response && error.response.status === 401) {
-    const authStore = useAuthStore()
-    authStore.clearToken()
-    router.push('/login')
-  }
-  return Promise.reject(error)
-})
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      const authStore = useAuthStore();
+      authStore.clearToken();
+      router.push("/login");
+    }
+    return Promise.reject(error);
+  },
+);
 
-export default api
+export default api;
